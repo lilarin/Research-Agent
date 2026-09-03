@@ -1,0 +1,15 @@
+# Environment files
+.env
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+
+# Node / Vite
+node_modules/
+dist/
+
+# IDEs and operating systems
+.idea/
+.vscode/
