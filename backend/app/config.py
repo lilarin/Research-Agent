@@ -14,9 +14,20 @@ class Settings(BaseSettings):
         default=["http://localhost:5173"],
         alias="CORS_ORIGINS",
     )
+
+    postgres_host: str = Field(default="postgres", alias="POSTGRES_HOST")
+    postgres_port: int = Field(default=5432, alias="POSTGRES_PORT")
+    postgres_db: str = Field(default="research", alias="POSTGRES_DB")
+    postgres_user: str = Field(default="postgres", alias="POSTGRES_USER")
+    postgres_password: str = Field(
+        default="postgres",
+        alias="POSTGRES_PASSWORD",
+    )
+
     redis_host: str = Field(default="redis", alias="REDIS_HOST")
     redis_port: int = Field(default=6379, alias="REDIS_PORT")
     redis_db: int = Field(default=0, alias="REDIS_DB")
+
     model_base_url: str = Field(
         default="http://ollama:11434",
         alias="MODEL_BASE_URL",
