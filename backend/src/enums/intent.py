@@ -4,4 +4,4 @@ from enum import StrEnum
 class IntentMode(StrEnum):
     EXECUTE = "execute"
     CLARIFY = "clarify"
-    UNSUPPORTED = "unsupported"
+    OUT_OF_SCOPE = "out_of_scope"
