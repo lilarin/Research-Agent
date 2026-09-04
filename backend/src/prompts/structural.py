@@ -43,6 +43,9 @@ MODE_SELECTION_PROMPT = ChatPromptTemplate.from_messages(
                     "Select the context source for the research request.",
                     "Return JSON with exactly two fields: mode and search_query.",
                     "mode must be one of: documents, web, documents_and_web.",
+                    "Use documents only when the user clearly asks to search the provided documents. "
+                    "Use web only when the user clearly asks for web or online information. "
+                    "If neither source is specified or implied, use documents_and_web.",
                     "Write search_query as one concise, standalone search query. "
                     "Use relevant chat history to resolve references, keeping the user's "
                     "intent, key names and constraints such as dates or locations. "
