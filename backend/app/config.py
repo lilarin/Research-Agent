@@ -33,6 +33,10 @@ class Settings(BaseSettings):
         alias="MODEL_BASE_URL",
     )
     llm_model: str = Field(default="qwen3:4b", alias="LLM_MODEL")
+    llm_max_retries: int = Field(default=2, alias="LLM_MAX_RETRIES")
+    llm_retry_after: int = Field(default=1, alias="LLM_RETRY_AFTER")
+    llm_timeout: float = Field(default=120.0, alias="LLM_TIMEOUT")
+    llm_answer_think: str = Field(default="low", alias="LLM_ANSWER_THINK")
     embedding_model: str = Field(
         default="embeddinggemma:300m-qat-q4_0",
         alias="EMBEDDING_MODEL",
