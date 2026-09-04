@@ -46,6 +46,8 @@ class Settings(BaseSettings):
         alias="RERANKER_MODEL",
     )
 
+    chat_history_messages_limit: int = 10
+
 
 @lru_cache
 def get_settings() -> Settings:

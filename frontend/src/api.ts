@@ -4,6 +4,7 @@ import {handleSseMessage} from './sse'
 import type {StreamEvent} from './sse'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8787'
+const conversationUuid = crypto.randomUUID()
 
 export function streamResearch(
   question: string,
@@ -13,7 +14,7 @@ export function streamResearch(
   return fetchEventSource(`${API_BASE_URL}/api/v1/questions`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({question}),
+    body: JSON.stringify({question, uuid: conversationUuid}),
     signal,
     openWhenHidden: true,
     async onopen(response) {
