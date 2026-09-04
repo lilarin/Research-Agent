@@ -10,6 +10,7 @@ services:
       - .env
     volumes:
       - ./backend/app:/app/app
+      - ./backend/src:/app/src
       - ./backend/main.py:/app/main.py
     deploy:
       resources:
