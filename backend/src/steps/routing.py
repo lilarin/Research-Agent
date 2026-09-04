@@ -8,7 +8,10 @@ from src.schemas.decisions import RouteDecision
 
 class RoutingStep:
     def __init__(self, *, model: BaseChatModel) -> None:
-        self._chain = ROUTE_PROMPT | model.with_structured_output(RouteDecision)
+        self._chain = ROUTE_PROMPT | model.with_structured_output(
+            RouteDecision,
+            method="json_mode",
+        )
 
     async def route(
         self,

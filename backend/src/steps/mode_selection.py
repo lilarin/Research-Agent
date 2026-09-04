@@ -8,7 +8,10 @@ from src.schemas.decisions import ModeDecision
 
 class ModeSelectionStep:
     def __init__(self, *, model: BaseChatModel) -> None:
-        self._chain = MODE_SELECTION_PROMPT | model.with_structured_output(ModeDecision)
+        self._chain = MODE_SELECTION_PROMPT | model.with_structured_output(
+            ModeDecision,
+            method="json_mode",
+        )
 
     async def select(
         self,
