@@ -13,7 +13,7 @@ def get_tortoise_config(settings: Settings) -> dict[str, object]:
         },
         "apps": {
             "models": {
-                "models": ["src.models.models", "aerich.models"],
+                "models": ["src.models.chat", "aerich.models"],
                 "default_connection": "default",
             },
         },
@@ -21,7 +21,10 @@ def get_tortoise_config(settings: Settings) -> dict[str, object]:
 
 
 async def init_database(settings: Settings) -> None:
-    await Tortoise.init(config=get_tortoise_config(settings))
+    await Tortoise.init(
+        config=get_tortoise_config(settings),
+        _enable_global_fallback=True,
+    )
 
 
 async def close_database() -> None:
