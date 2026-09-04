@@ -28,10 +28,29 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      model-init:
+      init-models:
         condition: service_completed_successfully
       init-migrations:
         condition: service_completed_successfully
+
+  search:
+    build:
+      context: ./search
+    init: true
+    restart: unless-stopped
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "512M"
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ['SEARCH_PORT'] + '/health')" ]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   init-migrations:
     build:
@@ -111,7 +130,7 @@ services:
       timeout: 5s
       retries: 10
 
-  model-init:
+  init-models:
     image: ollama/ollama:latest
     restart: "no"
     environment:
