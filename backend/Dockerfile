@@ -13,5 +13,6 @@ RUN uv sync --frozen --no-dev
 COPY main.py ./
 COPY app ./app
 COPY src ./src
+COPY migrations ./migrations
 
 CMD ["uv", "run", "--no-sync", "python", "main.py"]

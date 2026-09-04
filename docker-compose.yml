@@ -18,8 +18,8 @@ services:
           cpus: "1.0"
           memory: "512M"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:${BACKEND_PORT}/health')"]
-      interval: 10s
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:${BACKEND_PORT}/health')" ]
+      interval: 60s
       timeout: 5s
       retries: 5
       start_period: 10s
@@ -30,6 +30,24 @@ services:
         condition: service_healthy
       model-init:
         condition: service_completed_successfully
+      init-migrations:
+        condition: service_completed_successfully
+
+  init-migrations:
+    build:
+      context: ./backend
+    restart: "no"
+    command:
+      [
+        "sh",
+        "-c",
+        "uv run --no-sync aerich init-db && uv run --no-sync aerich upgrade",
+      ]
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   postgres:
     image: pgvector/pgvector:pg17
@@ -46,7 +64,7 @@ services:
           cpus: "1.0"
           memory: "512M"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -70,7 +88,7 @@ services:
           cpus: "0.5"
           memory: "256M"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -86,9 +104,9 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]
+              capabilities: [ gpu ]
     healthcheck:
-      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1"]
+      test: [ "CMD-SHELL", "ollama list >/dev/null 2>&1" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -100,7 +118,7 @@ services:
       OLLAMA_HOST: ollama:11434
     volumes:
       - ollama-data:/root/.ollama
-    entrypoint: ["/bin/sh", "-c"]
+    entrypoint: [ "/bin/sh", "-c" ]
     command:
       - >-
         until ollama list >/dev/null 2>&1; do sleep 2; done;
