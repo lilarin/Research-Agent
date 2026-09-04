@@ -6,6 +6,7 @@ dependencies = [
     "arq>=0.27.0",
     "fastapi>=0.141.1",
     "langchain-ollama>=0.3.10",
+    "langchain-litellm>=0.6.3",
     "langgraph>=0.6.0",
     "pydantic-settings>=2.15.0",
     "python-multipart>=0.0.32",
