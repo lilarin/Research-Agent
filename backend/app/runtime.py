@@ -4,12 +4,11 @@ from functools import lru_cache
 from typing import Any, Literal, cast
 
 from langchain_litellm import ChatLiteLLMRouter
-from litellm import Router
 from langgraph.graph.state import CompiledStateGraph
+from litellm import Router
 
 from app.config import Settings, get_settings
 from src.dataclasses.state import ExecutionState
-from src.enums.nodes import GraphNode
 from src.graph.graph import build_research_graph
 from src.graph.nodes import ResearchGraphNodes
 from src.services.documents_context import DocumentsContextService
@@ -32,11 +31,14 @@ class Runtime:
     async def run(self, state: ExecutionState) -> dict[str, object]:
         return await self._graph.ainvoke(state)
 
-    async def stream(
+    async def stream_events(
             self,
             state: ExecutionState,
-    ) -> AsyncIterator[str]:
-        stream_mode: tuple[Literal["messages"]] = ("messages",)
+    ) -> AsyncIterator[dict[str, object]]:
+        stream_mode: tuple[Literal["tasks", "messages"], ...] = (
+            "tasks",
+            "messages",
+        )
         stream = self._graph.astream(
             cast(Any, state),
             stream_mode=stream_mode,
@@ -44,18 +46,7 @@ class Runtime:
         )
         async with aclosing(stream):
             async for event in stream:
-                if event["type"] != "messages":
-                    continue
-                message, metadata = event["data"]
-                if metadata["langgraph_node"] not in (
-                        GraphNode.ANSWER,
-                        GraphNode.CLARIFY,
-                        GraphNode.OUT_OF_SCOPE,
-                ):
-                    continue
-                text = message.text
-                if text:
-                    yield text
+                yield event
 
 
 def build_runtime(settings: Settings) -> Runtime:
