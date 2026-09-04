@@ -1,8 +1,10 @@
 from collections.abc import AsyncIterator
 from contextlib import aclosing
 from functools import lru_cache
+from typing import Any, Literal, cast
 
-from langchain_ollama import ChatOllama
+from langchain_litellm import ChatLiteLLMRouter
+from litellm import Router
 from langgraph.graph.state import CompiledStateGraph
 
 from app.config import Settings, get_settings
@@ -34,9 +36,17 @@ class Runtime:
             self,
             state: ExecutionState,
     ) -> AsyncIterator[str]:
-        stream = self._graph.astream(state, stream_mode="messages")
+        stream_mode: tuple[Literal["messages"]] = ("messages",)
+        stream = self._graph.astream(
+            cast(Any, state),
+            stream_mode=stream_mode,
+            version="v2",
+        )
         async with aclosing(stream):
-            async for message, metadata in stream:
+            async for event in stream:
+                if event["type"] != "messages":
+                    continue
+                message, metadata = event["data"]
                 if metadata["langgraph_node"] not in (
                         GraphNode.ANSWER,
                         GraphNode.CLARIFY,
@@ -49,13 +59,49 @@ class Runtime:
 
 
 def build_runtime(settings: Settings) -> Runtime:
-    model = ChatOllama(
-        base_url=settings.model_base_url,
-        model=settings.llm_model,
+    router = Router(
+        model_list=[
+            {
+                "model_name": settings.llm_model,
+                "litellm_params": {
+                    "model": f"ollama_chat/{settings.llm_model}",
+                    "api_base": settings.model_base_url,
+                    "think": settings.llm_answer_think,
+                },
+            },
+        ],
+        num_retries=settings.llm_max_retries,
+        retry_after=settings.llm_retry_after,
+        timeout=settings.llm_timeout,
+    )
+    structured_router = Router(
+        model_list=[
+            {
+                "model_name": settings.llm_model,
+                "litellm_params": {
+                    "model": f"ollama_chat/{settings.llm_model}",
+                    "api_base": settings.model_base_url,
+                    "think": False,
+                },
+            },
+        ],
+        num_retries=settings.llm_max_retries,
+        retry_after=settings.llm_retry_after,
+        timeout=settings.llm_timeout,
+    )
+    model = ChatLiteLLMRouter(
+        router=router,
+        model_name=settings.llm_model,
+        streaming=True,
+    )
+    structured_model = ChatLiteLLMRouter(
+        router=structured_router,
+        model_name=settings.llm_model,
+        streaming=True,
     )
     nodes = ResearchGraphNodes(
-        routing_step=RoutingStep(model=model),
-        mode_selection_step=ModeSelectionStep(model=model),
+        routing_step=RoutingStep(model=structured_model),
+        mode_selection_step=ModeSelectionStep(model=structured_model),
         clarification_step=ClarificationStep(model=model),
         out_of_scope_step=OutOfScopeStep(model=model),
         answer_step=AnswerStep(model=model),
