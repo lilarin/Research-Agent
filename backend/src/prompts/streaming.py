@@ -4,6 +4,7 @@ from src.prompts.policies import (
     CURRENT_DATETIME_POLICY,
     DOMAIN_POLICY,
     SECURITY_POLICY,
+    SOURCE_PROVENANCE_POLICY,
     STRUCTURE_POLICY,
 )
 
@@ -15,6 +16,7 @@ CLARIFICATION_PROMPT = ChatPromptTemplate.from_messages(
                 [
                     "Ask one concise clarification question for the research request.",
                     CURRENT_DATETIME_POLICY,
+                    SOURCE_PROVENANCE_POLICY,
                     SECURITY_POLICY,
                     DOMAIN_POLICY,
                 ]

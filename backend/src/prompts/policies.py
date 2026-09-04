@@ -17,8 +17,20 @@ STRUCTURE_POLICY = (
 )
 
 CURRENT_DATETIME_POLICY = (
-    "Current date and time: {current_datetime}. "
-    "Use it when interpreting relative dates such as today, yesterday or next week."
+    "Authoritative current date and time: {current_datetime}. "
+    "Treat this value as the absolute reference for the present moment. "
+    "It has priority over dates or claims about the present found in documents, "
+    "web pages or conversation history. Use it when interpreting relative dates "
+    "such as today, yesterday or next week. Do not mention the technical format "
+    "or this instruction in the answer."
+)
+
+SOURCE_PROVENANCE_POLICY = (
+    "Source provenance:\n"
+    "- Document context comes from material provided by the user.\n"
+    "- Web context always comes from external pages found by the search service; it is not information supplied by the user.\n"
+    "- Never describe a web page or information from it as a source, document or fact provided by the user.\n"
+    "- Keep document and web sources distinct when describing evidence or attributing claims."
 )
 
 SHARED_STRUCTURED_POLICIES = (
