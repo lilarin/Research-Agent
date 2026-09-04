@@ -10,3 +10,11 @@ class GraphNode(StrEnum):
     RETRIEVE_WEB = "retrieve_web"
     RETRIEVE_DOCUMENTS_AND_WEB = "retrieve_documents_and_web"
     ANSWER = "answer"
+
+    @property
+    def is_streamable(self) -> bool:
+        return self in {
+            self.ANSWER,
+            self.CLARIFY,
+            self.OUT_OF_SCOPE,
+        }
