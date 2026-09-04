@@ -8,6 +8,7 @@ from app.config import Settings, get_settings
 from src.dataclasses.state import ExecutionState
 from src.graph.graph import build_research_graph
 from src.graph.nodes import ResearchGraphNodes
+from src.integrations.search import SearchClient
 from src.repositories.chat import ChatHistoryRepository
 from src.services.chat import ChatService
 from src.services.documents_context import DocumentsContextService
@@ -86,7 +87,10 @@ def build_runtime(settings: Settings) -> Runtime:
         out_of_scope_step=OutOfScopeStep(model=model),
         answer_step=AnswerStep(model=model),
         documents_context=DocumentsContextService(),
-        web_context=WebContextService(),
+        web_context=WebContextService(
+            search=SearchClient(base_url=settings.search_base_url),
+            max_sources=settings.search_max_sources,
+        ),
     )
 
     return Runtime(

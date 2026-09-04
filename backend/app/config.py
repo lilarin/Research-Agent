@@ -46,7 +46,15 @@ class Settings(BaseSettings):
         alias="RERANKER_MODEL",
     )
 
-    chat_history_messages_limit: int = 10
+    chat_history_messages_limit: int = Field(default=10)
+    search_base_url: str = Field(
+        default="http://search:8002",
+        alias="SEARCH_BASE_URL"
+    )
+    search_max_sources: int = Field(
+        default=5, alias="SEARCH_MAX_SOURCES",
+        ge=1
+    )
 
 
 @lru_cache
