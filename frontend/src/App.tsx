@@ -38,8 +38,10 @@ function App() {
     try {
       await streamResearch(
         trimmedRequest,
-        (chunk) => {
-          setMarkdown((current) => current + chunk)
+        (streamEvent) => {
+          if (streamEvent.event === 'message') {
+            setMarkdown((current) => current + streamEvent.data.answer)
+          }
         },
         abortController.signal,
       )
