@@ -1,6 +1,11 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-from src.prompts.policies import DOMAIN_POLICY, SECURITY_POLICY, STRUCTURE_POLICY
+from src.prompts.policies import (
+    CURRENT_DATETIME_POLICY,
+    DOMAIN_POLICY,
+    SECURITY_POLICY,
+    STRUCTURE_POLICY,
+)
 
 CLARIFICATION_PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -9,6 +14,7 @@ CLARIFICATION_PROMPT = ChatPromptTemplate.from_messages(
             "\n\n".join(
                 [
                     "Ask one concise clarification question for the research request.",
+                    CURRENT_DATETIME_POLICY,
                     SECURITY_POLICY,
                     DOMAIN_POLICY,
                 ]
@@ -29,6 +35,7 @@ OUT_OF_SCOPE_PROMPT = ChatPromptTemplate.from_messages(
             "\n\n".join(
                 [
                     "Briefly explain that the request is outside the supported research scope.",
+                    CURRENT_DATETIME_POLICY,
                     SECURITY_POLICY,
                     DOMAIN_POLICY,
                 ]
@@ -60,6 +67,7 @@ ANSWER_PROMPT = ChatPromptTemplate.from_messages(
                     "of files or records. Give totals only when the source supports them.",
                     "Being listed in a source does not mean a resource is still available "
                     "or working. Make that claim only when there is evidence of verification.",
+                    CURRENT_DATETIME_POLICY,
                     SECURITY_POLICY,
                     DOMAIN_POLICY,
                     STRUCTURE_POLICY,

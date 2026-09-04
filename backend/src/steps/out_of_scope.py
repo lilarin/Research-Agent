@@ -3,6 +3,7 @@ from langchain_core.runnables import RunnableConfig
 
 from src.dataclasses.state import ExecutionState
 from src.prompts.streaming import OUT_OF_SCOPE_PROMPT
+from src.utils.time import current_datetime
 
 
 class OutOfScopeStep:
@@ -10,14 +11,15 @@ class OutOfScopeStep:
         self._chain = OUT_OF_SCOPE_PROMPT | model
 
     async def respond(
-        self,
-        *,
-        state: ExecutionState,
-        config: RunnableConfig | None = None,
+            self,
+            *,
+            state: ExecutionState,
+            config: RunnableConfig | None = None,
     ) -> str:
         response = await self._chain.ainvoke(
             {
                 "question": state.question,
+                "current_datetime": current_datetime(),
             },
             config=config,
         )

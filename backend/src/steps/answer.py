@@ -6,6 +6,7 @@ from langchain_core.runnables import RunnableConfig
 
 from src.dataclasses.state import ExecutionState
 from src.prompts.streaming import ANSWER_PROMPT
+from src.utils.time import current_datetime
 
 
 class AnswerStep:
@@ -13,10 +14,10 @@ class AnswerStep:
         self._chain = ANSWER_PROMPT | model
 
     async def execute(
-        self,
-        *,
-        state: ExecutionState,
-        config: RunnableConfig | None = None,
+            self,
+            *,
+            state: ExecutionState,
+            config: RunnableConfig | None = None,
     ) -> str:
         context = json.dumps(
             [asdict(chunk) for chunk in state.context],
@@ -27,6 +28,7 @@ class AnswerStep:
                 "question": state.question,
                 "chat_history": state.history_messages,
                 "context": context,
+                "current_datetime": current_datetime(),
             },
             config=config,
         )

@@ -16,6 +16,11 @@ STRUCTURE_POLICY = (
     "- Use short paragraphs and Markdown when it improves readability."
 )
 
+CURRENT_DATETIME_POLICY = (
+    "Current date and time: {current_datetime}. "
+    "Use it when interpreting relative dates such as today, yesterday or next week."
+)
+
 SHARED_STRUCTURED_POLICIES = (
     SECURITY_POLICY,
     DOMAIN_POLICY,
