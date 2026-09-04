@@ -14,10 +14,10 @@ class RoutingStep:
         )
 
     async def route(
-        self,
-        *,
-        state: ExecutionState,
-        config: RunnableConfig | None = None,
+            self,
+            *,
+            state: ExecutionState,
+            config: RunnableConfig | None = None,
     ) -> RouteDecision:
         response = await self._chain.ainvoke(
             {

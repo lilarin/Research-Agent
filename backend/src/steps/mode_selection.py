@@ -14,10 +14,10 @@ class ModeSelectionStep:
         )
 
     async def select(
-        self,
-        *,
-        state: ExecutionState,
-        config: RunnableConfig | None = None,
+            self,
+            *,
+            state: ExecutionState,
+            config: RunnableConfig | None = None,
     ) -> ModeDecision:
         response = await self._chain.ainvoke(
             {
