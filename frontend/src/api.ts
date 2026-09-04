@@ -15,6 +15,7 @@ export function streamResearch(
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({question}),
     signal,
+    openWhenHidden: true,
     async onopen(response) {
       if (!response.ok) {
         const text = await response.text()
@@ -41,7 +42,7 @@ export async function uploadSources(files: FileList): Promise<UploadResult> {
     if (file) formData.append('files', file)
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/sources`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/documents`, {
     method: 'POST',
     body: formData,
   })
