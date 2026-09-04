@@ -1,59 +1,44 @@
+import {fetchEventSource} from '@microsoft/fetch-event-source'
+
+import {handleSseMessage} from './sse'
+import type {StreamEvent} from './sse'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8787'
 
-export async function streamResearch(
-  request: string,
-  onChunk: (chunk: string) => void,
+export function streamResearch(
+  question: string,
+  onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/research`, {
+  return fetchEventSource(`${API_BASE_URL}/api/v1/questions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ request }),
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({question}),
     signal,
+    async onopen(response) {
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `Research request failed with ${response.status}`)
+      }
+    },
+    onmessage(message) {
+      handleSseMessage(message, onEvent)
+    },
+    onerror(error) {
+      throw error
+    },
   })
-
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(text || `Research request failed with ${response.status}`)
-  }
-
-  if (!response.body) {
-    throw new Error('Research response did not include a stream.')
-  }
-
-  const decoder = new TextDecoder()
-  const reader = response.body.getReader()
-
-  while (true) {
-    const { done, value } = await reader.read()
-
-    if (done) {
-      break
-    }
-
-    onChunk(decoder.decode(value, { stream: true }))
-  }
-
-  const finalChunk = decoder.decode()
-
-  if (finalChunk) {
-    onChunk(finalChunk)
-  }
 }
 
 export type UploadResult = {
-  uploaded: Array<{ name: string; size: number; type: string }>
+  uploaded: Array<{name: string; size: number; type: string}>
 }
 
 export async function uploadSources(files: FileList): Promise<UploadResult> {
   const formData = new FormData()
-
   for (let i = 0; i < files.length; i++) {
     const file = files.item(i)
-
-    if (file) {
-      formData.append('files', file)
-    }
+    if (file) formData.append('files', file)
   }
 
   const response = await fetch(`${API_BASE_URL}/api/sources`, {
