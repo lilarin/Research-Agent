@@ -5,6 +5,7 @@ from dataclasses import asdict
 from time import perf_counter
 from typing import Any
 
+from app.logger import log_exception
 from app.runtime import Runtime
 from src.dataclasses.state import ExecutionState
 from src.dataclasses.stream import StreamPayload
@@ -25,11 +26,12 @@ async def stream_sse(
     processor = StreamProcessor(perf_counter())
     yield serialize_sse_event(processor.workflow_started())
     try:
-        async for event in runtime.stream_events(state):
+        async for event in runtime.stream_answer(state):
             if payload := processor.handle(event):
                 yield serialize_sse_event(payload)
         yield serialize_sse_event(processor.workflow_finished())
     except asyncio.CancelledError:
         raise
-    except Exception:
+    except Exception as error:
+        log_exception("Failed to stream answer", error)
         yield serialize_sse_event(processor.error("Service unavailable"))

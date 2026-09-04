@@ -1,16 +1,15 @@
 from collections.abc import AsyncIterator
-from contextlib import aclosing
 from functools import lru_cache
-from typing import Any, Literal, cast
 
 from langchain_litellm import ChatLiteLLMRouter
-from langgraph.graph.state import CompiledStateGraph
 from litellm import Router
 
 from app.config import Settings, get_settings
 from src.dataclasses.state import ExecutionState
 from src.graph.graph import build_research_graph
 from src.graph.nodes import ResearchGraphNodes
+from src.repositories.chat import ChatHistoryRepository
+from src.services.chat import ChatService
 from src.services.documents_context import DocumentsContextService
 from src.services.web_context import WebContextService
 from src.steps.answer import AnswerStep
@@ -24,29 +23,19 @@ class Runtime:
     def __init__(
             self,
             *,
-            graph: CompiledStateGraph,
+            chat: ChatService,
     ) -> None:
-        self._graph = graph
+        self._chat = chat
 
     async def run(self, state: ExecutionState) -> dict[str, object]:
-        return await self._graph.ainvoke(state)
+        return await self._chat.run(state)
 
-    async def stream_events(
+    async def stream_answer(
             self,
             state: ExecutionState,
     ) -> AsyncIterator[dict[str, object]]:
-        stream_mode: tuple[Literal["tasks", "messages"], ...] = (
-            "tasks",
-            "messages",
-        )
-        stream = self._graph.astream(
-            cast(Any, state),
-            stream_mode=stream_mode,
-            version="v2",
-        )
-        async with aclosing(stream):
-            async for event in stream:
-                yield event
+        async for event in self._chat.stream_answer(state):
+            yield event
 
 
 def build_runtime(settings: Settings) -> Runtime:
@@ -100,7 +89,14 @@ def build_runtime(settings: Settings) -> Runtime:
         web_context=WebContextService(),
     )
 
-    return Runtime(graph=build_research_graph(nodes))
+    return Runtime(
+        chat=ChatService(
+            graph=build_research_graph(nodes),
+            history=ChatHistoryRepository(
+                messages_limit=settings.chat_history_messages_limit,
+            ),
+        ),
+    )
 
 
 @lru_cache
