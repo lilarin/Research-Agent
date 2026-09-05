@@ -50,7 +50,7 @@ class Settings(BaseSettings):
         default="http://documents:8001", alias="DOCUMENTS_BASE_URL"
     )
     documents_max_upload_bytes: int = Field(
-        default=25_000_000,
+        ...,
         gt=0,
         alias="DOCUMENTS_MAX_UPLOAD_BYTES",
     )

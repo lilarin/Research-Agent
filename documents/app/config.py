@@ -26,21 +26,9 @@ class Settings(BaseSettings):
     redis_port: int = Field(6379, alias="REDIS_PORT")
     redis_db: int = Field(0, alias="REDIS_DB")
     queue_name: str = Field("documents:index", alias="DOCUMENTS_QUEUE")
-    max_upload_bytes: int = Field(25_000_000, gt=0, alias="DOCUMENTS_MAX_UPLOAD_BYTES")
+    max_upload_bytes: int = Field(..., gt=0, alias="DOCUMENTS_MAX_UPLOAD_BYTES")
     max_files: int = Field(10, gt=0, alias="DOCUMENTS_MAX_FILES")
-    formats: list[str] = Field(
-        [
-            "pdf",
-            "docx",
-            "pptx",
-            "xlsx",
-            "html",
-            "md",
-            "csv",
-            "image",
-        ],
-        alias="DOCUMENTS_FORMATS",
-    )
+    formats: list[str] = Field(..., alias="DOCUMENTS_FORMATS")
     job_timeout: int = Field(1800, gt=0, alias="DOCUMENTS_JOB_TIMEOUT")
     max_jobs: int = Field(1, gt=0, alias="DOCUMENTS_MAX_JOBS")
     max_tries: int = Field(3, gt=0, alias="DOCUMENTS_MAX_TRIES")
