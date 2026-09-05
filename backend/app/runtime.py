@@ -1,13 +1,16 @@
 from collections.abc import AsyncIterator
-from functools import lru_cache
+from contextlib import AsyncExitStack, asynccontextmanager
 
+from httpx import AsyncClient
 from langchain_litellm import ChatLiteLLMRouter
-from litellm import Router
+from litellm.router import Router
 
-from app.config import Settings, get_settings
-from src.dataclasses.state import ExecutionState
+from app.config import Settings
+from app.database import close_database, init_database
+from app.dataclasses.runtime import Runtime
 from src.graph.graph import build_research_graph
 from src.graph.nodes import ResearchGraphNodes
+from src.integrations.documents import DocumentsClient
 from src.integrations.search import SearchClient
 from src.repositories.chat import ChatHistoryRepository
 from src.services.chat import ChatService
@@ -20,26 +23,12 @@ from src.steps.out_of_scope import OutOfScopeStep
 from src.steps.routing import RoutingStep
 
 
-class Runtime:
-    def __init__(
-            self,
-            *,
-            chat: ChatService,
-    ) -> None:
-        self._chat = chat
-
-    async def run(self, state: ExecutionState) -> dict[str, object]:
-        return await self._chat.run(state)
-
-    async def stream_answer(
-            self,
-            state: ExecutionState,
-    ) -> AsyncIterator[dict[str, object]]:
-        async for event in self._chat.stream_answer(state):
-            yield event
-
-
-def build_runtime(settings: Settings) -> Runtime:
+def build_chat_service(
+        settings: Settings,
+        *,
+        search: SearchClient,
+        documents: DocumentsClient,
+) -> ChatService:
     router = Router(
         model_list=[
             {
@@ -86,23 +75,45 @@ def build_runtime(settings: Settings) -> Runtime:
         clarification_step=ClarificationStep(model=model),
         out_of_scope_step=OutOfScopeStep(model=model),
         answer_step=AnswerStep(model=model),
-        documents_context=DocumentsContextService(),
+        documents_context=DocumentsContextService(
+            documents=documents,
+            max_search=settings.documents_max_search,
+            max_retrieval=settings.documents_max_retrieval,
+        ),
         web_context=WebContextService(
-            search=SearchClient(base_url=settings.search_base_url),
+            search=search,
             max_sources=settings.search_max_sources,
         ),
     )
-
-    return Runtime(
-        chat=ChatService(
-            graph=build_research_graph(nodes),
-            history=ChatHistoryRepository(
-                messages_limit=settings.chat_history_messages_limit,
-            ),
+    return ChatService(
+        graph=build_research_graph(nodes),
+        history=ChatHistoryRepository(
+            messages_limit=settings.chat_history_messages_limit,
         ),
     )
 
 
-@lru_cache
-def get_runtime() -> Runtime:
-    return build_runtime(get_settings())
+@asynccontextmanager
+async def open_runtime(settings: Settings) -> AsyncIterator[Runtime]:
+    async with AsyncExitStack() as stack:
+        await init_database(settings)
+        stack.push_async_callback(close_database)
+
+        search_http = await stack.enter_async_context(
+            AsyncClient(base_url=settings.search_base_url)
+        )
+        documents_http = await stack.enter_async_context(
+            AsyncClient(base_url=settings.documents_base_url)
+        )
+        search = SearchClient(client=search_http)
+        documents = DocumentsClient(client=documents_http)
+
+        yield Runtime(
+            chat=build_chat_service(
+                settings,
+                search=search,
+                documents=documents,
+            ),
+            documents=documents,
+            search=search,
+        )

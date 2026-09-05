@@ -4,17 +4,17 @@ from fastapi import FastAPI, Response, status
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.database import close_database, init_database
 from app.routers.v1.router import router as router_v1
+from app.runtime import open_runtime
 
 settings = get_settings()
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
-    await init_database(settings)
-    yield
-    await close_database()
+async def lifespan(application: FastAPI):
+    async with open_runtime(settings) as runtime:
+        application.state.runtime = runtime
+        yield
 
 
 app = FastAPI(title="Research Agent API", version="1.0", lifespan=lifespan)
