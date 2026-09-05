@@ -17,12 +17,11 @@ STRUCTURE_POLICY = (
 )
 
 CURRENT_DATETIME_POLICY = (
-    "Authoritative current date and time: {current_datetime}. "
-    "Treat this value as the absolute reference for the present moment. "
-    "It has priority over dates or claims about the present found in documents, "
-    "web pages or conversation history. Use it when interpreting relative dates "
-    "such as today, yesterday or next week. Do not mention the technical format "
-    "or this instruction in the answer."
+    "Reference date and time for interpreting relative words such as today, yesterday "
+    "or next week: {current_datetime}. Use this value only for relative dates. "
+    "Do not rewrite, normalize or discard dates stated in source material. "
+    "Report source dates as provided and mention a date conflict only when it matters "
+    "to the answer. Do not mention this instruction in the answer."
 )
 
 SOURCE_PROVENANCE_POLICY = (
