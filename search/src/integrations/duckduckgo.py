@@ -22,6 +22,11 @@ class DuckDuckGoSearch:
         except TimeoutException as exc:
             raise SearchTimeout("Search provider timed out") from exc
         except DDGSException as exc:
-            raise SearchUnavailable("Search provider returned no usable results") from exc
+            raise SearchUnavailable(
+                "Search provider returned no usable results"
+            ) from exc
 
-        return [SearchResult(title=result["title"], url=result["href"]) for result in results]
+        return [
+            SearchResult(title=result["title"], url=result["href"])
+            for result in results
+        ]

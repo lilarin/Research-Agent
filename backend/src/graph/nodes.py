@@ -36,33 +36,47 @@ class ResearchGraphNodes:
         self._transitions = ResearchGraphTransitions()
 
     async def route(
-            self, state: ExecutionState, config: RunnableConfig,
+            self,
+            state: ExecutionState,
+            config: RunnableConfig,
     ) -> Command[str]:
         decision = await self._routing_step.route(state=state, config=config)
         return self._transitions.route_start_command(decision=decision)
 
     async def clarify(
-            self, state: ExecutionState, config: RunnableConfig,
+            self,
+            state: ExecutionState,
+            config: RunnableConfig,
     ) -> dict[str, str]:
         answer = await self._clarification_step.clarify(state=state, config=config)
         return {"answer": answer}
 
     async def out_of_scope(
-            self, state: ExecutionState, config: RunnableConfig,
+            self,
+            state: ExecutionState,
+            config: RunnableConfig,
     ) -> dict[str, str]:
         answer = await self._out_of_scope_step.respond(state=state, config=config)
         return {"answer": answer}
 
     async def select_mode(
-            self, state: ExecutionState, config: RunnableConfig,
+            self,
+            state: ExecutionState,
+            config: RunnableConfig,
     ) -> Command[str]:
         decision = await self._mode_selection_step.select(state=state, config=config)
         return self._transitions.select_mode_command(decision=decision)
 
-    async def retrieve_documents(self, state: ExecutionState) -> dict[str, object]:
+    async def retrieve_documents(
+            self,
+            state: ExecutionState,
+    ) -> dict[str, object]:
         return {"context": await self._documents_context.retrieve(state)}
 
-    async def retrieve_web(self, state: ExecutionState) -> dict[str, object]:
+    async def retrieve_web(
+            self,
+            state: ExecutionState,
+    ) -> dict[str, object]:
         return {"context": await self._web_context.retrieve(state)}
 
     async def retrieve_documents_and_web(
@@ -76,7 +90,9 @@ class ResearchGraphNodes:
         return {"context": [*documents, *web]}
 
     async def answer(
-            self, state: ExecutionState, config: RunnableConfig,
+            self,
+            state: ExecutionState,
+            config: RunnableConfig,
     ) -> dict[str, str]:
         answer = await self._answer_step.execute(state=state, config=config)
         return {"answer": answer}

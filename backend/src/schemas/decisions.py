@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.enums.decisions import RouteMode, ContextMode
+from src.enums.decisions import ContextMode, RouteMode
 
 
 class RouteDecision(BaseModel):

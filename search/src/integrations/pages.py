@@ -9,7 +9,12 @@ from src.dataclasses.search import SearchResult, WebSource
 
 class PageReader:
     def __init__(
-            self, *, session: ClientSession, max_bytes: int, max_redirects: int, concurrency: int,
+            self,
+            *,
+            session: ClientSession,
+            max_bytes: int,
+            max_redirects: int,
+            concurrency: int,
     ) -> None:
         self._session = session
         self._max_bytes = max_bytes
@@ -24,23 +29,40 @@ class PageReader:
                 ) as response:
                     response.raise_for_status()
 
-                    if response.content_type not in {"text/html", "application/xhtml+xml", "text/plain"}:
-                        logger.info("Page skipped: %s (unsupported content type)", result.url)
+                    if response.content_type not in {
+                        "text/html",
+                        "application/xhtml+xml",
+                        "text/plain",
+                    }:
+                        logger.info(
+                            "Page skipped: %s (unsupported content type)", result.url
+                        )
                         return None
-                    if response.content_length is not None and response.content_length > self._max_bytes:
-                        logger.info("Page skipped: %s (download size limit exceeded)", result.url)
+                    if (
+                            response.content_length is not None
+                            and response.content_length > self._max_bytes
+                    ):
+                        logger.info(
+                            "Page skipped: %s (download size limit exceeded)",
+                            result.url,
+                        )
                         return None
 
                     body = bytearray()
                     async for chunk in response.content.iter_any():
                         body.extend(chunk)
                         if len(body) > self._max_bytes:
-                            logger.info("Page skipped: %s (download size limit exceeded)", result.url)
+                            logger.info(
+                                "Page skipped: %s (download size limit exceeded)",
+                                result.url,
+                            )
                             return None
 
                     url = str(response.url)
                     if response.content_type == "text/plain":
-                        content = body.decode(response.charset or "utf-8", errors="replace").strip()
+                        content = body.decode(
+                            response.charset or "utf-8", errors="replace"
+                        ).strip()
                     else:
                         content = await to_thread(
                             extract,

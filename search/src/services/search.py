@@ -12,7 +12,9 @@ class SearchService:
         self._pages = pages
 
     async def search(self, query: str, *, max_sources: int) -> list[WebSource]:
-        results = await asyncio.to_thread(self._search.search, query, max_sources=max_sources)
+        results = await asyncio.to_thread(
+            self._search.search, query, max_sources=max_sources
+        )
         async with asyncio.TaskGroup() as group:
             tasks = [group.create_task(self._pages.read(result)) for result in results]
 
