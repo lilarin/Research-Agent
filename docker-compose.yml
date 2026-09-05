@@ -238,8 +238,9 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_DOCUMENTS_MAX_UPLOAD_BYTES: ${VITE_DOCUMENTS_MAX_UPLOAD_BYTES}
+        API_BASE_URL: ${API_BASE_URL}
+        DOCUMENTS_MAX_UPLOAD_BYTES: ${DOCUMENTS_MAX_UPLOAD_BYTES}
+        DOCUMENTS_FORMATS: ${DOCUMENTS_FORMATS}
     ports:
       - "${FRONTEND_PORT}:80"
     restart: unless-stopped
