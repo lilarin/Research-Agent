@@ -4,6 +4,8 @@ from contextlib import AsyncExitStack, asynccontextmanager
 from httpx import AsyncClient
 from langchain_litellm import ChatLiteLLMRouter
 from litellm.router import Router
+from openinference.instrumentation.langchain import LangChainInstrumentor
+from phoenix.otel import register
 
 from app.config import Settings
 from app.database import close_database, init_database
@@ -95,15 +97,27 @@ def build_chat_service(
 
 @asynccontextmanager
 async def open_runtime(settings: Settings) -> AsyncIterator[Runtime]:
+    tracer_provider = register(
+        project_name=settings.phoenix_project_name,
+        endpoint=settings.phoenix_collector_endpoint,
+    )
+    LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+
     async with AsyncExitStack() as stack:
         await init_database(settings)
         stack.push_async_callback(close_database)
 
         search_http = await stack.enter_async_context(
-            AsyncClient(base_url=settings.search_base_url)
+            AsyncClient(
+                base_url=settings.search_base_url,
+                timeout=settings.http_timeout,
+            )
         )
         documents_http = await stack.enter_async_context(
-            AsyncClient(base_url=settings.documents_base_url)
+            AsyncClient(
+                base_url=settings.documents_base_url,
+                timeout=settings.http_timeout,
+            )
         )
         search = SearchClient(client=search_http)
         documents = DocumentsClient(client=documents_http)

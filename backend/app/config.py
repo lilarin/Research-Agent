@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Self
 
 from pydantic import Field, model_validator
@@ -6,13 +7,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parents[2] / ".env",
+        extra="ignore",
+    )
 
     host: str = Field(default="0.0.0.0", alias="BACKEND_HOST")
     port: int = Field(default=8000, alias="BACKEND_PORT")
     debug: bool = Field(default=False, alias="DEBUG")
     cors_origins: list[str] = Field(
-        default=["http://localhost:5173"],
+        ...,
         alias="CORS_ORIGINS",
     )
 
@@ -33,20 +37,34 @@ class Settings(BaseSettings):
         default="http://ollama:11434",
         alias="MODEL_BASE_URL",
     )
-    llm_model: str = Field(default="qwen3:4b", alias="LLM_MODEL")
+    llm_model: str = Field(..., alias="LLM_MODEL")
     llm_max_retries: int = Field(default=2, alias="LLM_MAX_RETRIES")
     llm_retry_after: int = Field(default=1, alias="LLM_RETRY_AFTER")
     llm_timeout: float = Field(default=120.0, alias="LLM_TIMEOUT")
     llm_answer_think: str = Field(default="low", alias="LLM_ANSWER_THINK")
     chat_history_messages_limit: int = Field(default=10)
+    http_timeout: float = Field(default=30.0, alias="HTTP_TIMEOUT", gt=0)
     search_base_url: str = Field(default="http://search:8002", alias="SEARCH_BASE_URL")
     search_max_sources: int = Field(default=5, alias="SEARCH_MAX_SOURCES", ge=1)
     documents_base_url: str = Field(
         default="http://documents:8001", alias="DOCUMENTS_BASE_URL"
     )
+    documents_max_upload_bytes: int = Field(
+        default=25_000_000,
+        gt=0,
+        alias="DOCUMENTS_MAX_UPLOAD_BYTES",
+    )
     documents_max_search: int = Field(default=20, ge=1, alias="DOCUMENTS_MAX_SEARCH")
     documents_max_retrieval: int = Field(
         default=20, ge=1, alias="DOCUMENTS_MAX_RETRIEVAL"
+    )
+    phoenix_collector_endpoint: str = Field(
+        default="http://localhost:6006/v1/traces",
+        alias="PHOENIX_COLLECTOR_ENDPOINT",
+    )
+    phoenix_project_name: str = Field(
+        default="research-agent",
+        alias="PHOENIX_PROJECT_NAME",
     )
 
     @model_validator(mode="after")
