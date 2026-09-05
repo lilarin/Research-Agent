@@ -16,4 +16,16 @@ dependencies = [
 [dependency-groups]
 worker = [
     "docling-slim[convert-core,feat-chunking,feat-ocr-rapidocr,format-html,format-markdown,format-office,format-pdf]>=2,<3",
+    "docling-ibm-models>=4,<5",
+    "torch>=2,<3",
+    "torchvision>=0,<1",
 ]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
