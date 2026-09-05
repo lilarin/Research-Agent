@@ -22,6 +22,7 @@ generated
 ## Features
 
 - Streams generated research answers over Server-Sent Events
+- Streams agent workflow events, node timings, and answer chunks to the frontend
 - Grounds answers in uploaded PDF, DOCX, PPTX, XLSX, HTML, Markdown, CSV, and image sources
 - Searches the web and extracts readable page content
 - Keeps document and web evidence separate in the retrieved context
@@ -163,7 +164,7 @@ Measure:
 - routing and clarification accuracy;
 - first-token latency and total generation time;
 - indexing success and time until a source is searchable;
-- API and dependency failure rates.
+- API and dependency failure rates.нк 
 
 Automated checks are useful for retrieval and citation coverage. Final answer quality should also be reviewed by humans
 against a reference answer or a clear scoring rubric. Phoenix traces help identify whether a poor result came from
@@ -174,7 +175,8 @@ routing, retrieval, prompting, model generation, or infrastructure.
 ## Design Notes & Trade-offs
 
 The workflow is intentionally self-contained instead of relying on hosted research or LLM APIs. Routing, retrieval,
-streaming, and failure handling stay explicit, while the models run locally through Ollama.
+streaming, and failure handling stay explicit, while the models run locally through Ollama. Agent streaming was added
+so the frontend can receive workflow progress and answer chunks while the request is running.
 
 Only actionable failures are exposed to the user. Non-critical LLM and dependency errors are kept in logs and traces. If
 one context source fails, the request can continue with the remaining context. Critical failures return a generic
@@ -186,6 +188,7 @@ service error.
 
 - Documents and chat history are scoped to the conversation UUID created when the frontend page is opened. A refresh or
   new tab starts a new conversation
+- The frontend receives workflow events but does not yet display routing, research, and answer-generation status
 - No document indexing status in the UI
 - No dedicated temporary blob storage for uploads
 - The current document-processing stack is heavy and may be overkill for a local setup. The library choice is not final and would benefit from another review, since I have not built a local document-processing pipeline recently
@@ -198,6 +201,7 @@ service error.
 
 ## Possible Next Steps
 
+- Display routing, research, and answer-generation status in the frontend using the existing stream events
 - Add a reranker after retrieval. Ollama has no suitable reranker interface, and integrating a separate Hugging Face
   model was outside the available time
 - Combine semantic vector search with lexical search for exact names, keywords, and identifiers
