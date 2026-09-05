@@ -188,6 +188,7 @@ service error.
   new tab starts a new conversation
 - No document indexing status in the UI
 - No dedicated temporary blob storage for uploads
+- The current document-processing stack is heavy and may be overkill for a local setup. The library choice is not final and would benefit from another review, since I have not built a local document-processing pipeline recently
 - The configured local model is relatively small and can hallucinate or confuse dates. Source-grounding and an
   authoritative current-date instruction were added to the prompts, but the issue is not fully eliminated
 - Deployment is configured for local development rather than production operations
