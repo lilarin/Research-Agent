@@ -3,9 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sse_starlette.sse import EventSourceResponse
 
-from app.runtime import Runtime, get_runtime
+from app.dependencies.chat import get_chat_service
 from app.schemas.questions import QuestionRequest
 from src.dataclasses.state import ExecutionState
+from src.services.chat import ChatService
 from src.streaming.pipeline import stream_sse
 
 router = APIRouter()
@@ -30,10 +31,10 @@ router = APIRouter()
 )
 async def answer_question(
         request: QuestionRequest,
-        runtime: Annotated[Runtime, Depends(get_runtime)],
+        chat: Annotated[ChatService, Depends(get_chat_service)],
 ) -> EventSourceResponse:
     state = ExecutionState(
         conversation_uuid=request.uuid,
         question=request.question,
     )
-    return EventSourceResponse(stream_sse(runtime, state))
+    return EventSourceResponse(stream_sse(chat, state))

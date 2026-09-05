@@ -6,9 +6,9 @@ from time import perf_counter
 from typing import Any
 
 from app.logger import log_exception
-from app.runtime import Runtime
 from src.dataclasses.state import ExecutionState
 from src.dataclasses.stream import StreamPayload
+from src.services.chat import ChatService
 from src.streaming.processor import StreamProcessor
 
 
@@ -20,13 +20,13 @@ def serialize_sse_event(payload: StreamPayload[Any]) -> dict[str, str]:
 
 
 async def stream_sse(
-        runtime: Runtime,
+        chat: ChatService,
         state: ExecutionState,
 ) -> AsyncIterator[dict[str, str]]:
     processor = StreamProcessor(perf_counter())
     yield serialize_sse_event(processor.workflow_started())
     try:
-        async for event in runtime.stream_answer(state):
+        async for event in chat.stream_answer(state):
             if payload := processor.handle(event):
                 yield serialize_sse_event(payload)
         yield serialize_sse_event(processor.workflow_finished())
