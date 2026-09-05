@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.dependencies.search import get_search_service
 from app.schemas.search import SearchRequest, SearchResponse, SourceResponse
@@ -11,20 +11,17 @@ from src.services.search import SearchService
 router = APIRouter()
 
 
-@router.post(
+@router.get(
     "",
     response_model=SearchResponse,
     summary="Search the web and extract page text",
 )
 async def search_web(
-        request: SearchRequest,
+        request: Annotated[SearchRequest, Query()],
         service: Annotated[SearchService, Depends(get_search_service)],
 ) -> SearchResponse:
     try:
-        sources = await service.search(
-            request.query,
-            max_sources=request.max_sources
-        )
+        sources = await service.search(request.query, max_sources=request.max_sources)
     except (SearchTimeout, SearchUnavailable, ContentUnavailable) as exc:
         log_exception("Web search failed", exc)
         raise HTTPException(
@@ -32,8 +29,5 @@ async def search_web(
             detail="Unable to retrieve web search results",
         ) from exc
     return SearchResponse(
-        sources=[
-            SourceResponse.model_validate(source)
-            for source in sources
-        ]
+        sources=[SourceResponse.model_validate(source) for source in sources]
     )
