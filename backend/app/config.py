@@ -1,6 +1,7 @@
 from functools import lru_cache
+from typing import Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,24 +38,24 @@ class Settings(BaseSettings):
     llm_retry_after: int = Field(default=1, alias="LLM_RETRY_AFTER")
     llm_timeout: float = Field(default=120.0, alias="LLM_TIMEOUT")
     llm_answer_think: str = Field(default="low", alias="LLM_ANSWER_THINK")
-    embedding_model: str = Field(
-        default="embeddinggemma:300m-qat-q4_0",
-        alias="EMBEDDING_MODEL",
+    chat_history_messages_limit: int = Field(default=10)
+    search_base_url: str = Field(default="http://search:8002", alias="SEARCH_BASE_URL")
+    search_max_sources: int = Field(default=5, alias="SEARCH_MAX_SOURCES", ge=1)
+    documents_base_url: str = Field(
+        default="http://documents:8001", alias="DOCUMENTS_BASE_URL"
     )
-    reranker_model: str = Field(
-        default="dengcao/Qwen3-Reranker-0.6B:Q8_0",
-        alias="RERANKER_MODEL",
+    documents_max_search: int = Field(default=20, ge=1, alias="DOCUMENTS_MAX_SEARCH")
+    documents_max_retrieval: int = Field(
+        default=20, ge=1, alias="DOCUMENTS_MAX_RETRIEVAL"
     )
 
-    chat_history_messages_limit: int = Field(default=10)
-    search_base_url: str = Field(
-        default="http://search:8002",
-        alias="SEARCH_BASE_URL"
-    )
-    search_max_sources: int = Field(
-        default=5, alias="SEARCH_MAX_SOURCES",
-        ge=1
-    )
+    @model_validator(mode="after")
+    def validate_documents_limits(self) -> Self:
+        if self.documents_max_retrieval > self.documents_max_search:
+            raise ValueError(
+                "DOCUMENTS_MAX_RETRIEVAL must not exceed DOCUMENTS_MAX_SEARCH"
+            )
+        return self
 
 
 @lru_cache
