@@ -8,6 +8,8 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     env_file:
       - .env
+    environment:
+      PHOENIX_COLLECTOR_ENDPOINT: http://phoenix:6006/v1/traces
     volumes:
       - ./backend/app:/app/app
       - ./backend/src:/app/src
@@ -26,11 +28,66 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      phoenix:
+        condition: service_started
       postgres:
         condition: service_healthy
       init-models:
         condition: service_completed_successfully
       init-migrations:
+        condition: service_completed_successfully
+
+  documents:
+    build:
+      context: ./documents
+      target: api
+    init: true
+    restart: unless-stopped
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+    depends_on:
+      redis:
+        condition: service_healthy
+      init-models:
+        condition: service_completed_successfully
+      init-migrations:
+        condition: service_completed_successfully
+      init-document-store:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.getenv('DOCUMENTS_PORT', '8001') + '/health')" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
+
+  document-worker:
+    build:
+      context: ./documents
+      target: worker
+    init: true
+    restart: unless-stopped
+    command: [ "uv", "run", "--no-sync", "arq", "app.worker.WorkerSettings" ]
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+    depends_on:
+      redis:
+        condition: service_healthy
+      init-models:
+        condition: service_completed_successfully
+      init-migrations:
+        condition: service_completed_successfully
+      init-document-store:
         condition: service_completed_successfully
 
   search:
@@ -64,6 +121,28 @@ services:
       ]
     env_file:
       - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "256M"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  init-document-store:
+    build:
+      context: ./documents
+      target: api
+    restart: "no"
+    command: [ "uv", "run", "--no-sync", "python", "-m", "app.store" ]
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     depends_on:
       postgres:
         condition: service_healthy
@@ -119,6 +198,9 @@ services:
       - ollama-data:/root/.ollama
     deploy:
       resources:
+        limits:
+          cpus: "4.0"
+          memory: "8G"
         reservations:
           devices:
             - driver: nvidia
@@ -137,13 +219,17 @@ services:
       OLLAMA_HOST: ollama:11434
     volumes:
       - ollama-data:/root/.ollama
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1G"
     entrypoint: [ "/bin/sh", "-c" ]
     command:
       - >-
         until ollama list >/dev/null 2>&1; do sleep 2; done;
         ollama pull ${LLM_MODEL};
-        ollama pull ${EMBEDDING_MODEL};
-        ollama pull ${RERANKER_MODEL}
+        ollama pull ${EMBEDDING_MODEL}
     depends_on:
       ollama:
         condition: service_healthy
@@ -153,6 +239,7 @@ services:
       context: ./frontend
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_DOCUMENTS_MAX_UPLOAD_BYTES: ${VITE_DOCUMENTS_MAX_UPLOAD_BYTES}
     ports:
       - "${FRONTEND_PORT}:80"
     restart: unless-stopped
@@ -165,7 +252,23 @@ services:
       backend:
         condition: service_healthy
 
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    restart: unless-stopped
+    ports:
+      - "6006:6006"
+    environment:
+      PHOENIX_WORKING_DIR: /mnt/data
+    volumes:
+      - phoenix-data:/mnt/data
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1G"
+
 volumes:
   postgres-data:
   redis-data:
   ollama-data:
+  phoenix-data:
