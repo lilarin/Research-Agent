@@ -12,11 +12,14 @@ ROUTE_PROMPT = ChatPromptTemplate.from_messages(
                     "Use execute when it is clear what the user wants to find out. "
                     "This includes finding, explaining, comparing, checking or summarizing "
                     "information. A question is enough; it does not need to be phrased as a command.",
-                    "Use clarify when the user gives only a topic or statement and "
-                    "it is not clear what they want to know. Ask about the goal rather "
-                    "than choosing one for them.",
-                    "Use out_of_scope for tasks outside research, such as writing fiction "
-                    "or performing an action. Factual explanations and research summaries "
+                    "Use execute for any research, investigation, explanation, comparison, "
+                    "fact-checking or summarization request, even when it is broad or "
+                    "underspecified. Do not clarify only because the topic lacks constraints.",
+                    "Use clarify only when the user provides a bare topic, keyword or "
+                    "fragment with no question, goal or requested operation.",
+                    "Use out_of_scope when the primary request is to write or generate "
+                    "content, write code, perform an action, or provide dangerous, illegal "
+                    "or non-research assistance. Factual explanations and research summaries "
                     "are within scope.",
                     "You are choosing the next step, not answering the question yet. "
                     "Missing document contents or search results are not a reason to "

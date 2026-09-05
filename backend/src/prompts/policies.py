@@ -6,8 +6,8 @@ SECURITY_POLICY = (
 
 DOMAIN_POLICY = (
     "Domain policy:\n"
-    "- Answer questions that can be investigated with documents or web sources.\n"
-    "- If the request is unrelated to research, classify it as out of scope."
+    "- Research, investigation, explanation, comparison, fact checking and summarization are within scope.\n"
+    "- Writing or generating content, performing actions, and dangerous, illegal or non-research assistance are out of scope."
 )
 
 STRUCTURE_POLICY = (
