@@ -140,13 +140,76 @@ button:disabled {
   min-height: 260px;
   margin: 0;
   overflow-x: auto;
-  white-space: pre-wrap;
   border: 1px solid #d1d5db;
   border-radius: 12px;
   background: #0f172a;
   color: #e5e7eb;
-  font: 0.95rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   padding: 18px;
+}
+
+.markdown-output > :first-child {
+  margin-top: 0;
+}
+
+.markdown-output > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-output h1,
+.markdown-output h2,
+.markdown-output h3,
+.markdown-output h4,
+.markdown-output h5,
+.markdown-output h6 {
+  color: #f8fafc;
+  line-height: 1.25;
+}
+
+.markdown-output a {
+  color: #93c5fd;
+}
+
+.markdown-output code {
+  border-radius: 4px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font: 0.9em ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  padding: 2px 4px;
+}
+
+.markdown-output pre {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: #020617;
+  padding: 14px;
+}
+
+.markdown-output pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-output blockquote {
+  margin-left: 0;
+  border-left: 3px solid #64748b;
+  color: #cbd5e1;
+  padding-left: 14px;
+}
+
+.markdown-output table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-output th,
+.markdown-output td {
+  border: 1px solid #475569;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.markdown-output th {
+  background: #1e293b;
 }
 
 .file-list {
