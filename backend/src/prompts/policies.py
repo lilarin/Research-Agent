@@ -16,6 +16,12 @@ STRUCTURE_POLICY = (
     "- Use short paragraphs and Markdown when it improves readability."
 )
 
+MARKDOWN_POLICY = (
+    "Markdown response policy:\n"
+    "- Use headings, paragraphs, bullet or numbered lists, emphasis, links, blockquotes and fenced code blocks when useful.\n"
+    "- Do not use Markdown tables. Present tabular information as bullet lists or short paragraphs."
+)
+
 CURRENT_DATETIME_POLICY = (
     "Reference date and time for interpreting relative words such as today, yesterday "
     "or next week: {current_datetime}. Use this value only for relative dates. "

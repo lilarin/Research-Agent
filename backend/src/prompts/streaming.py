@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from src.prompts.policies import (
     CURRENT_DATETIME_POLICY,
     DOMAIN_POLICY,
+    MARKDOWN_POLICY,
     SECURITY_POLICY,
     SOURCE_PROVENANCE_POLICY,
     STRUCTURE_POLICY,
@@ -103,6 +104,7 @@ ANSWER_PROMPT = ChatPromptTemplate.from_messages(
                     CURRENT_DATETIME_POLICY,
                     SECURITY_POLICY,
                     DOMAIN_POLICY,
+                    MARKDOWN_POLICY,
                     STRUCTURE_POLICY,
                 ]
             ),
