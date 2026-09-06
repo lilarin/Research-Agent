@@ -7,6 +7,7 @@ dependencies = [
     "fastapi>=0.115,<1",
     "pydantic-settings>=2,<3",
     "trafilatura>=2,<3",
+    "tenacity>=9,<10",
     "ua-generator>=2,<3",
     "uvicorn>=0.34,<1",
     "aiohttp>=3.14.3",
